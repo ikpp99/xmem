@@ -27,4 +27,16 @@ public enum type
         }
         return null;
     }
+
+    static public int arrLen( type typ, Object arr ){
+        switch( typ ) {
+            case BYTE  :  return ((byte  [])arr).length;
+            case SHORT :  return ((short [])arr).length;
+            case INT   :  return ((int   [])arr).length;
+            case LONG  :  return ((long  [])arr).length;
+            case FLOAT :  return ((float [])arr).length;
+            case DOUBLE:  return ((double[])arr).length;
+        }
+        return -1;
+    }
 }

@@ -26,10 +26,23 @@ public class Block
     
     public static Block getBlock( String name ) throws Exception { return blockNamBlk.get( name );}
 
-    public  Block( type type, long[] size ) throws Exception { this("_"+(Seq++) , type, size, 0 );}
-    public  Block( String name, type type, long[] size ) throws Exception { this( name, type, size, 0 );}
-    public  Block( String name, type type, long[] size, int extLen ) throws Exception 
+    public  Block( type type, long[]   idx ) throws Exception { this("_"+(Seq++) ,       type, (Object)idx, 0 );}
+    public  Block( type type, long[][] idx ) throws Exception { this("_"+(Seq++) ,       type, (Object)idx, 0 );}
+    public  Block( String name, type type, long[]   idx ) throws Exception { this( name, type, (Object)idx, 0 );}
+    public  Block( String name, type type, long[][] idx ) throws Exception { this( name, type, (Object)idx, 0 );}
+    public  Block( String name, type type, long[]   idx, int extLen ) throws Exception { this( name, type, (Object)idx, extLen );}
+    public  Block( String name, type type, long[][] idx, int extLen ) throws Exception { this( name, type, (Object)idx, extLen );}
+    public  Block( String name, type type, Object   idx, int extLen ) throws Exception 
     {
+        long[] size=null;
+        if(      idx instanceof long[]   ){ size = (long[])idx;}
+        else if( idx instanceof long[][] ){
+            int x = ((long[][]) idx).length;
+            size = new long[ x ];
+            for(int i=0;i<x;i++) size[i]=((long[][])idx)[i][0];
+        }
+        else { throw new Exception("BAD INDEX of Class: "+idx.getClass());}
+        
         head = new Head( type, size, extLen );
         long sum = writeBlock( name );
         if( sum >0 ){

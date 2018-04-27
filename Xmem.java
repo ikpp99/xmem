@@ -123,6 +123,18 @@ public class Xmem
     
 //------------------------------------------------------------------------------------- static Utils:
     
+    static private long[][] cre2l( long[] a ){
+        int x = a.length;
+        long[][] dd = new long[x][2];
+        for(int i=0;i<x;i++){ dd[i][0]=a[i]; dd[i][1]=a[1];}
+        return dd;
+    }
+
+    static public long[][] idx( long i ){ return idx( cre2l( new long[]{i}));}
+    static public long[][] idx( long i, long j  ){ return idx( cre2l( new long[]{i,j}));}
+    static public long[][] idx( long i, long j, long k ){ return idx( cre2l( new long[]{i,j,k}));}
+    static public long[][] idx( long i, long j, long k, long l ){ return idx( cre2l( new long[]{i,j,k,l}));}
+
     static public long[][] idx( long[][] ind ){ return ind==null? null: copyL2( ind );}
     
     static public long[][] idx( String s ){  // ",i,j[:jj],:jj,,", *="ALL from this"

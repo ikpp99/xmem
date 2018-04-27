@@ -11,9 +11,26 @@ public class Part
     protected type     arrtyp;
     private   int[]    xx;     // size of part
     
-    public Part( Block block, long[][] indx ) throws Exception 
+    public void setIdx( long[][] idx )  throws Exception {
+        long[][] tt = Xmem.realIndex( idx, blk.head );
+        int len = (int)tt[0][1];
+        for(int i=1;i<tt.length;i++) len *= tt[i][1];
+        int arLen = type.arrLen( arrtyp, arr );
+        if( len > arLen ) throw new Exception("setIdx: "+len+" > ["+arrlen+"]");
+        pp = tt;
+        arrlen = len;
+    }
+
+    public void setArr( Object narr )  throws Exception {
+        if( !arr.getClass().equals( narr.getClass())) throw new Exception("setArr: types");
+        int len = type.arrLen( arrtyp, narr );
+        if( len < arrlen ) throw new Exception("setArr: "+len+" < ["+arrlen+"]");
+        arr = narr;
+    }
+    
+    public Part( Block block, long[][] idx ) throws Exception 
     {
-        blk=block; pp = Xmem.realIndex( indx, blk.head );
+        blk=block; pp = Xmem.realIndex( idx, blk.head );
         xx = new int[ pp.length ]; xx[0]=1; 
         arrlen=1;
         for( int i=0; i<pp.length; i++) {
@@ -260,9 +277,16 @@ public class Part
         pq3.fill( 0 ); pq3.set();
 tt("====================================================================");        
         
-        qq.copyBB( idx("1:3, 1:4, 1:4"), q3, idx("2, 2, 1") );
+        qq.copyBB( idx("1:3, 1:4, 1:4"), q3, Xmem.idx( 2, 2, 1 ) );
         pq3.get(); tt( ""+pq3 );
-tt("____________________________________________________________________ end.");        
+
+        Block B = new Block( type.INT, idx("5,6"));
+        Part  p = new Part( B, Xmem.idx("2:3,2:4"));
+        int[] ii=new int[30]; Arrays.fill( ii, -9 );
+        p.setArr( ii );
+        p.setIdx( Xmem.idx( ":5,:6" ));
+        tt(""+ p );
+tt("____________________________________________________________________ end.");
         
     }
     static long[][] idx( String s ){ return Xmem.idx( s );}
