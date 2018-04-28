@@ -7,14 +7,16 @@ import java.util.TreeMap;
 
 public class Xmem
 {
-    static protected  int MM = 64;  // 1024*1024*512 = 0.5 GB // length of byte[] arrs. 
+    static final private int DIM = 5;   // MAx DIMension of Block !!!
+    static final private int MM0 = 64;  // 1024*1024*512 = 0.5 GB // length of byte[] arrs. 
+    protected  int MM;   
     protected long memLen;
     protected ArrayList< byte[] > mem;
     
     protected HashMap< String, Long > blockNamLoc; 
     protected TreeMap<   Long, Long > freeLocLen;
     
-    public Xmem( long len ) throws Exception { this( len, MM );} 
+    public Xmem( long len ) throws Exception { this( len, MM0 );} 
     
     public Xmem( long len, int lenBuf8 ) throws Exception 
     {
@@ -94,8 +96,8 @@ public class Xmem
             p0=0; parr += nar; 
         }
     }
-    private int buf( long p ){ return (int)( p/MM );}
-    private int off( long p ){ return (int)( p - MM*buf( p ));} 
+    protected int buf( long p ){ return (int)( p/MM );}
+    protected int off( long p ){ return (int)( p - MM*buf( p ));} 
 
     public void copyLeft( long d, long s, long n ) throws Exception   // Left: d <= s || s+n <= d !!!
     {    
@@ -120,25 +122,16 @@ public class Xmem
         } 
         else throw new Exception("CrossCopy"); 
     }
-    
 //------------------------------------------------------------------------------------- static Utils:
-    
-    static private long[][] cre2l( long[] a ){
-        int x = a.length;
-        long[][] dd = new long[x][2];
-        for(int i=0;i<x;i++){ dd[i][0]=a[i]; dd[i][1]=a[1];}
-        return dd;
-    }
 
-    static public long[][] idx( long i ){ return idx( cre2l( new long[]{i}));}
-    static public long[][] idx( long i, long j  ){ return idx( cre2l( new long[]{i,j}));}
-    static public long[][] idx( long i, long j, long k ){ return idx( cre2l( new long[]{i,j,k}));}
-    static public long[][] idx( long i, long j, long k, long l ){ return idx( cre2l( new long[]{i,j,k,l}));}
+    static public long[][] idx( long i                         ){ return new long[][]{{i,1 }};}
+    static public long[][] idx( long i, long j                 ){ return new long[][]{{i,1 },{j,1}};}
+    static public long[][] idx( long i, long j, long k         ){ return new long[][]{{i,1 },{j,1},{k,1}};}
+    static public long[][] idx( long i, long j, long k, long l ){ return new long[][]{{i,1 },{j,1},{k,1},{l,1}};}
+    static public long[][] idx( long i, long j, long k, long l, long m ){ return new long[][]{{i,1 },{j,1},{k,1},{l,1},{m,1}};}
 
-    static public long[][] idx( long[][] ind ){ return ind==null? null: copyL2( ind );}
-    
     static public long[][] idx( String s ){  // ",i,j[:jj],:jj,,", *="ALL from this"
-        int j;        final int DIM=7;
+        int j;
         long[][] tt = new long[ DIM ][2];
         for(j=0;j< DIM ;j++) tt[j][0]=tt[j][1]=1;
         
@@ -185,10 +178,10 @@ public class Xmem
         return copyL2( tt, ++x );
     }
     
-    static public long[][] realIndex( long[][] ind, Head head ) throws Exception {
-
+    static public long[][] realIndex( long[][] ind, Head head ) throws Exception 
+    {
         long[][] jj = copyL2( ind );
-        
+
         for(int i=0; i<jj.length; i++){
             if( jj[i][0] == -1 ){ jj[i][1] = -1; jj[i][0] = 1; }
             if( jj[i][1] == -1 ){ jj[i][1] = head.siz[i] - jj[i][0]+1;}

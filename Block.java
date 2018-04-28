@@ -1,5 +1,7 @@
 package com.pik.xmem;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.LinkedHashMap;
 import java.util.TreeMap;
 
@@ -41,12 +43,17 @@ public class Block
             size = new long[ x ];
             for(int i=0;i<x;i++) size[i]=((long[][])idx)[i][0];
         }
-        else { throw new Exception("BAD INDEX of Class: "+idx.getClass());}
+        else { throw new Exception("BAD INDEX Class: "+idx.getClass());}
         
         head = new Head( type, size, extLen );
+        creBlock( name );
+    }
+    
+    private void creBlock( String name ) throws Exception 
+    {
         long sum = writeBlock( name );
         if( sum >0 ){
-            if( sum < head.len ) throw new Exception("NO MEMORY");
+            if( sum < head.len ) throw new Exception("NO MEMORY: "+sum+" < "+head.len);
 //          if(1==1)throw new Exception("NO Continuous MEMORY "+head.len);
 
             while( sum >0 ){
@@ -202,7 +209,7 @@ public class Block
     {
         rel = Xmem.realIndex( ix, head );
         klen = rel.length;
-        kk = new long[klen][2]; for(int i=0;i<klen;i++){ kk[i][0]=rel[i][0]; kk[i][1]=rel[i][1];}
+        kk   = Xmem.copyL2( rel );
         narr = (int)rel[0][1];
         
         kd = new long[ klen ];
@@ -310,6 +317,80 @@ public class Block
            mem.copyLeft( bbb, pos, iii );
        }
     }
+//------------------------------------------------------------------------------ Blk <--> File:
+//TODO
+    public void save() throws Exception { save( this.nam );}
+
+    public void save( String fileName ) throws Exception 
+    {
+        FileOutputStream ff=null; Exception ef=null, ec=null;
+        try{
+            ff = new FileOutputStream( fileName );
+            ff.write( ("### \""+nam+"\" "+head ).getBytes() );
+            ff.write( 13 );
+
+            long x = loc+head.len;
+            int b0=mem.buf( loc ), p0=mem.off( loc ), bx=mem.buf( x ), ee=mem.MM;
+            while( b0 <= bx )
+            {
+                if( b0==bx ) ee = mem.off( x );
+                int nn = ee - p0;                //numb. of bytes,
+                if( nn >0 ) ff.write( mem.mem.get(b0), p0, nn );
+                if( ++b0 > bx ) break;
+                p0=0; 
+            }
+        }
+        catch( Exception e ){ ef=e;}
+        finally{ try{ ff.close();}catch( Exception e ){ ec=e;}}
+        
+        if( ef!=null ) throw ef; 
+        if( ec!=null ) throw ec; 
+    }
+    
+    protected Block(){};
+
+    static public Block read( String fileName, String blockName ) throws Exception 
+    {
+        Block blk = new Block();
+        FileInputStream ff=null; Exception ef=null, ec=null;
+        try{
+            ff = new FileInputStream( fileName );
+            int b=0;
+            while( (b=ff.read())!=-1 && b!=13 ){}
+            
+            blk.head = new Head();
+            blk.head.getParam( new long[]{ readLong(ff), readLong(ff) });
+            
+                blk.creBlock( blockName );
+
+            long x = blk.loc + blk.head.len;
+            int b0=mem.buf( blk.loc ), p0=mem.off( blk.loc ), bx=mem.buf( x ), ee=mem.MM;
+            while( b0 <= bx )
+            {
+                if( b0==bx ) ee = mem.off( x );
+                int nn = ee - p0;
+                if( nn >0 ) ff.read( mem.mem.get(b0), p0, nn );
+                if( ++b0 > bx ) break;
+                p0=0; 
+            }
+        }
+        catch( Exception e ){ ef=e;}
+        finally{ try{ ff.close();}catch( Exception e ){ ec=e;}}
+        
+        if( ef!=null ) throw ef; 
+        if( ec!=null ) throw ec;
+        return blk;
+    }
+    static public Block read( String fileName ) throws Exception { return read( fileName, null );}
+
+    static private long readLong( FileInputStream ff ) throws Exception {
+        long d=0; 
+        d += ff.read() & 0xFF; d = d << 8;  
+        d += ff.read() & 0xFF; d = d << 8;
+        d += ff.read() & 0xFF; d = d << 8;
+        d += ff.read() & 0xFF;
+        return d;
+    }
     
 ///* DBG: =====================================================================================================
                                                                 static final boolean PUT=true, GET=false;
@@ -382,11 +463,9 @@ tt("___________ part:");
         rrr.set();
         
         idx = Xmem.idx("2:3,2:4,2:5");        
-tt("\n"+idx);        
         Part rr = new Part( r579, idx );
         rr.get();
-tt("idx[][]:  "+ Xmem.idx2str( idx ));        
-        tt( "############################ "+rr);
+        tt( ""+rr);
         
         tt( cat());       
         tt( "need = "+5*7*9*8);

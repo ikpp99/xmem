@@ -24,7 +24,7 @@ public class Head
         nb  = type.getNb();
         len = nb; for( long d: siz ) len *=d;
 
-        off    = 8*( 2 + dim ); exx = extLen>0? extLen: 0; off   += exx;
+        off    = 8*( 2 + dim ); exx = extLen>0? 8*(extLen/8): 0; off   += exx;
         len    = 8 * (( len + off + 7 )/8 );
     }
     
@@ -34,14 +34,19 @@ public class Head
         
         long[] hhl = { 0, 0 };
         mem.copyArr( locMem, hhl, false );
-
-        len = hhl[ 0 ];
-        off = (int)(  hhl[ 1 ]         & 0xFFFFFFFF );
-        typ = (int)(( hhl[ 1 ] >> 32 ) & 0xFFFF );
-        dim = (int)(( hhl[ 1 ] >> 48 ) & 0xFFFF );
-        siz = new long[ dim ];
-        mem.copyArr( locMem+16, siz, false );
         
+            getParam( hhl );
+
+        mem.copyArr( locMem+16, siz, false );
+    }
+    
+    protected void getParam( long[] hh )
+    {
+        len = hh[ 0 ];
+        off = (int)(  hh[ 1 ]         & 0xFFFFFFFF );
+        typ = (int)(( hh[ 1 ] >> 32 ) & 0xFFFF );
+        dim = (int)(( hh[ 1 ] >> 48 ) & 0xFFFF );
+        siz = new long[ dim ];
         int d0 = 8*( 2+dim ), lex = off-d0;
         exx = lex>0? lex: 0;
     }

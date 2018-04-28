@@ -227,7 +227,7 @@ public class Part
 ///* DBG: =====================================================================================================
     
     public static void main( String[] args ) throws Exception {
-        new Xmem( 512+1300 + 5*7*9*8 + 30 );
+        new Xmem( 512+1300 + 5*7*9*8 + 30 +999);
         
         Block iii = new Block("iii", type.INT, new long[]{ 5,7,9 } );
         Part rrr = new Part( iii, idx("*,*,*"));
@@ -250,7 +250,7 @@ public class Part
         
         Part  q = new Part( qq, idx("1:3,2:3,2:4,3:4"));
         q.get();
-        tt(""+q);
+        tt(""+q.toString());
         
         Part ww =  new Part( qq, idx("3,2:3,4:2,2:5"));
 //        Part ww =  new Part( qq, new Index("3,2:3,4,2:5"));
@@ -277,8 +277,10 @@ public class Part
         pq3.fill( 0 ); pq3.set();
 tt("====================================================================");        
         
-        qq.copyBB( idx("1:3, 1:4, 1:4"), q3, Xmem.idx( 2, 2, 1 ) );
+        qq.copyBB( idx("1:3, 1:4, 1:4"), q3, Xmem.idx( 2, 2, 1 ) );  
         pq3.get(); tt( ""+pq3 );
+        
+        int i=2; long[][] dd = Xmem.idx( i,i,i,i,i); tt("\ntest of idx(i,j,k): "+ Xmem.idx2str( dd ));
 
         Block B = new Block( type.INT, idx("5,6"));
         Part  p = new Part( B, Xmem.idx("2:3,2:4"));
@@ -287,7 +289,20 @@ tt("====================================================================");
         p.setIdx( Xmem.idx( ":5,:6" ));
         tt(""+ p );
 tt("____________________________________________________________________ end.");
+        Part qq1 = new Part( qq,idx("*,*,*,*")); qq1.get();
+        tt(""+ qq1 );
         
+        qq.save("_Block_qq");
+        
+//        Block ff = new Block("ff",type.INT, new long[]{3,4,5,6});
+//        qq.copyBB( idx("*,*,*,*"), ff, Xmem.idx(1) );
+        
+        Block ff = Block.read( "_Block_qq", "ff" );
+tt(""+ff);        
+tt( Block.cat() +"\n\n"+ff );
+//        Part ff1 = new Part( ff,idx("*,*,*,*")); ff1.get();
+//        tt(""+ ff1 );
+tt("________________________________________________________________________ end.");
     }
     static long[][] idx( String s ){ return Xmem.idx( s );}
     static void tt(String x){System.out.println( x );}static void tt(){tt("");}
