@@ -289,22 +289,18 @@ tt("====================================================================");
         p.setIdx( Xmem.idx( ":5,:6" ));
         tt(""+ p );
 tt("____________________________________________________________________ end.");
-        Part qq1 = new Part( qq,idx("*,*,*,*")); qq1.get();
-        tt(""+ qq1 );
-        
-        qq.save("_Block_qq");
-        
-//        Block ff = new Block("ff",type.INT, new long[]{3,4,5,6});
-//        qq.copyBB( idx("*,*,*,*"), ff, Xmem.idx(1) );
-        
-        Block ff = Block.read( "_Block_qq", "ff" );
-tt(""+ff);        
-tt( Block.cat() +"\n\n"+ff );
-//        Part ff1 = new Part( ff,idx("*,*,*,*")); ff1.get();
-//        tt(""+ ff1 );
+ttB( qq ); qq.save(); Block ff=null;
+int n=5; while( n-->0 ){ tt("____"+n); ff = Block.read( "qq" );}
+ttB( ff );
 tt("________________________________________________________________________ end.");
-    }
+}
+    
     static long[][] idx( String s ){ return Xmem.idx( s );}
     static void tt(String x){System.out.println( x );}static void tt(){tt("");}
+
+    static public void ttB( Block B ) throws Exception { 
+        String s=""; for(int i=0; i<B.head.siz.length;i++) s+="*,";
+        Part pB = new Part( B, idx( s )); pB.get(); tt(""+pB );
+    }
  //*/        
 }

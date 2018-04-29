@@ -1,5 +1,6 @@
 package com.pik.xmem;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.LinkedHashMap;
@@ -348,22 +349,33 @@ public class Block
     }
     
     protected Block(){};
+    
+    static public Block read( String fileName ) throws Exception { return read( fileName, null );}
 
     static public Block read( String fileName, String blockName ) throws Exception 
     {
         Block blk = new Block();
-        FileInputStream ff=null; Exception ef=null, ec=null;
+        BufferedInputStream ff=null; Exception ef=null, ec=null;
         try{
-            ff = new FileInputStream( fileName );
-            int b=0;
-            while( (b=ff.read())!=-1 && b!=13 ){}
+            ff = new BufferedInputStream( new FileInputStream( fileName ));
+            
+            int b=0; boolean isnam=false; String fnam="";  
+            while( (b=ff.read())!=-1 && b!=13 ){
+                if( b=='"') isnam = !isnam;
+                if( isnam ) fnam +=(char)b;
+            }
+            if( blockName==null ) blockName = fnam;
+                                                                               ff.mark( 999 ); 
             
             blk.head = new Head();
-            blk.head.getParam( new long[]{ readLong(ff), readLong(ff) });
+            blk.head.getParam( new long[]{ readLong( ff ), readLong( ff ) });
+            blk.head.siz = new long[ blk.head.dim ];
+            for( int i=0; i<blk.head.dim; i++) blk.head.siz[i] = readLong(ff);
             
+                if( getBlock( blockName ) !=null ) delete( blockName );
                 blk.creBlock( blockName );
-
-            long x = blk.loc + blk.head.len;
+                                                                               ff.reset();
+            long x = blk.loc + blk.head.len; 
             int b0=mem.buf( blk.loc ), p0=mem.off( blk.loc ), bx=mem.buf( x ), ee=mem.MM;
             while( b0 <= bx )
             {
@@ -381,14 +393,10 @@ public class Block
         if( ec!=null ) throw ec;
         return blk;
     }
-    static public Block read( String fileName ) throws Exception { return read( fileName, null );}
 
-    static private long readLong( FileInputStream ff ) throws Exception {
-        long d=0; 
-        d += ff.read() & 0xFF; d = d << 8;  
-        d += ff.read() & 0xFF; d = d << 8;
-        d += ff.read() & 0xFF; d = d << 8;
-        d += ff.read() & 0xFF;
+    static private long readLong( BufferedInputStream ff ) throws Exception {
+        int    n=8; long d = 0; 
+        while( n-->0 ){  d = d << 8; d += ff.read() & 0xFF;}
         return d;
     }
     
