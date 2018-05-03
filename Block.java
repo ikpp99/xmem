@@ -319,7 +319,8 @@ public class Block
        }
     }
 //------------------------------------------------------------------------------ Blk <--> File:
-//TODO
+    private final static byte BB=0; // Block Begin
+    
     public void save() throws Exception { save( this.nam );}
 
     public void save( String fileName ) throws Exception 
@@ -328,7 +329,7 @@ public class Block
         try{
             ff = new FileOutputStream( fileName );
             ff.write( ("### \""+nam+"\" "+head ).getBytes() );
-            ff.write( 13 );
+            ff.write( BB );
 
             long x = loc+head.len;
             int b0=mem.buf( loc ), p0=mem.off( loc ), bx=mem.buf( x ), ee=mem.MM;
@@ -360,13 +361,12 @@ public class Block
             ff = new BufferedInputStream( new FileInputStream( fileName ));
             
             int b=0; boolean isnam=false; String fnam="";  
-            while( (b=ff.read())!=-1 && b!=13 ){
+            while( (b=ff.read())!=-1 && b!=BB ){
                 if( b=='"') isnam = !isnam;
                 if( isnam ) fnam +=(char)b;
             }
             if( blockName==null ) blockName = fnam;
                                                                                ff.mark( 999 ); 
-            
             blk.head = new Head();
             blk.head.getParam( new long[]{ readLong( ff ), readLong( ff ) });
             blk.head.siz = new long[ blk.head.dim ];
