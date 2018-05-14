@@ -19,7 +19,7 @@ public class Block
     protected String  nam;
     protected Head    head;
     
-    static public void iniBlocks( Xmem xmem )
+    static protected void iniBlocks( Xmem xmem )
     {
         mem = xmem;
         freeLocLen = new TreeMap<>();
@@ -55,16 +55,16 @@ public class Block
         long sum = writeBlock( name );
         if( sum >0 ){
             if( sum < head.len ) throw new Exception("NO MEMORY: "+sum+" < "+head.len);
-//          if(1==1)throw new Exception("NO Continuous MEMORY "+head.len);
-
-            while( sum >0 ){
-                if( head.len <= concatLastHoles() ) sum = writeBlock( name );
-            }
+//            while( sum >0 ){
+//                if( head.len <= concatLastHoles() ) sum = writeBlock( name );
+//            }
+            throw new Exception("NO Continuous MEMORY "+head.len);
         }
     }
 
     private long writeBlock( String name )  throws Exception
     {
+        if( freeLocLen.keySet().size() < 1 ) throw new Exception("NO MEMORY"); 
         long sum=0;
         for( Long pos:   freeLocLen.keySet() ){
              Long free = freeLocLen.get( pos ); sum += free; 
@@ -149,7 +149,7 @@ public class Block
     public String toString(){ return "Block: \""+nam+"\" "+head+", loc="+loc+", dat="+(loc+head.off);}
     
     static public String cat() throws Exception {
-        String s= "\n### Catalog:"; int i=0;
+        String s= "\n### Catalog( "+mem.memLen+" ):"; int i=0;
         for( String name: blockNamBlk.keySet()) s+="\n    "+(++i)+".\t\t"+getBlock( name );
         s+="\n### Holes:"; i=0; long free=0;
         for( Long p: freeLocLen.keySet()){ 
@@ -323,11 +323,14 @@ public class Block
     
     public void save() throws Exception { save( this.nam );}
 
-    public void save( String fileName ) throws Exception 
+    public void save( String fileName ) throws Exception { save( fileName, null );} 
+
+    public void save( String fileName, String comment ) throws Exception 
     {
         FileOutputStream ff=null; Exception ef=null, ec=null;
         try{
             ff = new FileOutputStream( fileName );
+            if( comment !=null ) ff.write( (comment+"\n" ).getBytes() );
             ff.write( ("### \""+nam+"\" "+head ).getBytes() );
             ff.write( BB );
 

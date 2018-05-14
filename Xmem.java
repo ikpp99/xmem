@@ -24,14 +24,29 @@ public class Xmem
         mem = new ArrayList<>();
         long s=0;
         while( s < len ){
-            int n = MM;
-            if( s+n > len ) n = (int)( len - s );
-            
-            mem.add( new byte[ n ] );
-            s+=n;
+            mem.add( new byte[ MM ] );
+            s+=MM;
         }
-        memLen = len;
+        memLen = s;
         Block.iniBlocks( this );
+    }
+    
+    public void extend( long newLen ) throws Exception {
+        long sav = memLen;
+        while(  memLen < newLen ){
+                mem.add( new byte[ MM ] );
+                memLen += MM;
+        }
+        
+        long lfr=sav, lss=0;
+        int nfr = Block.freeLocLen.size();
+        if( nfr > 0 ){
+            lfr = (Long)(Block.freeLocLen.keySet().toArray()[ Block.freeLocLen.size()-1 ]);
+            lss = Block.freeLocLen.get( lfr );
+            if( lfr+lss < sav ) lss=0;
+        }
+        if( lss==0 ) Block.freeLocLen.put( sav, memLen-sav );
+        else         Block.freeLocLen.put( lfr, memLen-lfr );  
     }
     
     private void copArr( byte[] bb, int pbb, Object arr, int parr, int len, type typ, boolean put )
@@ -222,8 +237,8 @@ public class Xmem
                                                               static final boolean PUT=true, GET=false;
     public static void main( String[] args ) throws Exception
     {
-        int NN=1111; 
-        Xmem mem = new Xmem( 12*NN );
+        int NN=1111,               delt=64;
+        Xmem mem = new Xmem( 12*NN+delt );
 
         long[] ddd = new long[ NN ]; for(int i=0;i<NN;i++) ddd[i]=i;
         long[] rrr = new long[ ddd.length ]; 
@@ -243,6 +258,17 @@ public class Xmem
         mem.copyLeft( cc, bb, NN*8 );
         mem.copyArr(  cc, rr, GET  );
         s="[]: "; for( double r: rr ) s+=r+", ";  tt( s );
+//------------------------------------------------------------        
+
+        Block q = new Block( type.BYTE, idx( 13348 ));
+tt( Block.cat());
+        Block qqq = new Block( type.BYTE, idx( 33 ));
+        tt(""+qqq);
+tt( Block.cat());
+        q.delete();
+        q.mem.extend(12*NN + delt + 256 );
+tt( Block.cat());
+
     }
 //    
 }
